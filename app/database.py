@@ -13,44 +13,89 @@ Base = declarative_base()
 # Engine and SessionLocal will be created lazily
 _engine = None
 _SessionLocal = None
+_db_url = None
 
 
-def _ensure_data_dir_with_retry(max_retries=5, delay=1):
-    """Ensure data directory exists, with retries for volume mounting."""
-    for attempt in range(max_retries):
+def _wait_for_volume(max_wait_seconds=30):
+    """Wait for the Railway volume to be mounted."""
+    mount_path = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", DATA_DIR)
+    start_time = time.time()
+    
+    print(f"🔄 Waiting for volume at {mount_path}...")
+    
+    while time.time() - start_time < max_wait_seconds:
         try:
-            os.makedirs(DATA_DIR, exist_ok=True)
-            # Test if we can write to the directory
-            test_file = os.path.join(DATA_DIR, ".write_test")
+            # Check if the mount path exists and is writable
+            os.makedirs(mount_path, exist_ok=True)
+            test_file = os.path.join(mount_path, ".volume_test")
+            
             with open(test_file, "w") as f:
-                f.write("test")
+                f.write(f"test-{time.time()}")
+            
+            # Verify we can read it back
+            with open(test_file, "r") as f:
+                content = f.read()
+            
             os.remove(test_file)
-            return True
-        except (OSError, IOError) as e:
-            if attempt < max_retries - 1:
-                print(f"Waiting for volume mount (attempt {attempt + 1}/{max_retries})...")
-                time.sleep(delay)
-            else:
-                print(f"Could not access data directory after {max_retries} attempts: {e}")
-                return False
-    return False
+            
+            if content:
+                print(f"✅ Volume mounted successfully at {mount_path}")
+                return mount_path
+                
+        except (OSError, IOError, PermissionError) as e:
+            elapsed = int(time.time() - start_time)
+            print(f"⏳ Waiting for volume... ({elapsed}s) - {e}")
+            time.sleep(1)
+    
+    print(f"⚠️ Volume not available after {max_wait_seconds}s")
+    return None
+
+
+def get_database_url():
+    """Get the database URL, waiting for volume if needed."""
+    global _db_url
+    
+    if _db_url is not None:
+        return _db_url
+    
+    # Check if we're on Railway with a volume
+    volume_mount = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH")
+    
+    if volume_mount:
+        # Wait for Railway volume to be ready
+        ready_path = _wait_for_volume(max_wait_seconds=30)
+        
+        if ready_path:
+            _db_url = f"sqlite:///{ready_path}/geopolitics_news.db"
+            print(f"📀 Database: {_db_url}")
+            return _db_url
+    
+    # Check if DATA_DIR is accessible (for local development)
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        test_file = os.path.join(DATA_DIR, ".test")
+        with open(test_file, "w") as f:
+            f.write("test")
+        os.remove(test_file)
+        _db_url = DATABASE_URL
+        print(f"📀 Database (local): {_db_url}")
+        return _db_url
+    except (OSError, IOError, PermissionError):
+        pass
+    
+    # Last resort fallback - NOT persistent but allows app to start
+    print("⚠️ WARNING: Using non-persistent /tmp database!")
+    fallback_dir = "/tmp/geopolitics_data"
+    os.makedirs(fallback_dir, exist_ok=True)
+    _db_url = f"sqlite:///{fallback_dir}/geopolitics_news.db"
+    return _db_url
 
 
 def get_engine():
     """Get or create the database engine."""
     global _engine
     if _engine is None:
-        # Ensure data directory exists with retry
-        if not _ensure_data_dir_with_retry():
-            # Fallback to local directory
-            local_data_dir = "/tmp/geopolitics_data"
-            os.makedirs(local_data_dir, exist_ok=True)
-            db_url = f"sqlite:///{local_data_dir}/geopolitics_news.db"
-            print(f"Using fallback database at {db_url}")
-        else:
-            db_url = DATABASE_URL
-            print(f"Using primary database at {db_url}")
-        
+        db_url = get_database_url()
         _engine = create_engine(
             db_url, 
             connect_args={"check_same_thread": False} if "sqlite" in db_url else {}
