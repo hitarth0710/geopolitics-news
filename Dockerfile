@@ -26,6 +26,10 @@ WORKDIR /app
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
+# Create data directory for SQLite with proper permissions
+# This must be done before switching to non-root user
+RUN mkdir -p /data && chown -R appuser:appuser /data && chmod 755 /data
+
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
@@ -43,7 +47,8 @@ ENV PYTHONUNBUFFERED=1 \
     ENVIRONMENT=production \
     DEBUG=false \
     LOG_JSON=true \
-    DATABASE_URL=sqlite:////app/data/geopolitics_news.db \
+    DATA_DIR=/data \
+    DATABASE_URL=sqlite:////data/geopolitics_news.db \
     PORT=8000
 
 # Expose port
