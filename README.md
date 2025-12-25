@@ -215,18 +215,6 @@ FEED_UPDATE_INTERVAL=30
 
 ---
 
-### Deploy to Render
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/hitarth0710/geopolitics-news)
-
-This repo includes a `render.yaml` for easy deployment:
-
-1. Fork this repository
-2. Create a new Web Service on [Render](https://render.com)
-3. Connect your GitHub repo
-4. Render will auto-detect the configuration
-
----
 
 ### Deploy with Docker Compose (Self-hosted)
 
