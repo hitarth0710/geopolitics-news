@@ -18,7 +18,8 @@ _db_url = None
 
 def _wait_for_volume(max_wait_seconds=30):
     """Wait for the Railway volume to be mounted."""
-    mount_path = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", DATA_DIR)
+    # Railway volume can be at /data or custom path from env
+    mount_path = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH") or os.environ.get("DATA_DIR") or "/data"
     start_time = time.time()
     
     print(f"🔄 Waiting for volume at {mount_path}...")

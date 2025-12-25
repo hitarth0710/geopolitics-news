@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Data directory for persistent storage (Railway volume mount point)
-DATA_DIR = os.getenv("DATA_DIR", "/app/data")
+# Use /data for Railway (better permissions) or /app/data as fallback
+DATA_DIR = os.getenv("DATA_DIR", "/data")
 
 # Database - use persistent data directory
 DEFAULT_DB_PATH = os.path.join(DATA_DIR, "geopolitics_news.db")
