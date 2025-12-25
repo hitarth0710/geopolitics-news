@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - {{ app_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#1e40af', accent: '#dc2626' }}}}</script>
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .headline { font-family: 'Playfair Display', serif; }
+        .gradient-text { background: linear-gradient(135deg, #1e40af, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <span class="text-2xl">🌍</span>
+                        <span class="headline text-xl font-bold gradient-text">{{ app_name }}</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">← Back to News</a>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg class="h-6 w-6 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <svg class="h-6 w-6 dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Hero -->
+        <div class="text-center mb-12">
+            <h1 class="headline text-4xl font-bold mb-4">About {{ app_name }}</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400">Your window to world geopolitics</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+                <div class="text-4xl font-bold text-primary">{{ article_count }}</div>
+                <div class="text-sm text-gray-500 mt-1">Articles</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+                <div class="text-4xl font-bold text-primary">{{ sources|length }}</div>
+                <div class="text-sm text-gray-500 mt-1">News Sources</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+                <div class="text-4xl font-bold text-primary">30</div>
+                <div class="text-sm text-gray-500 mt-1">Min Update Interval</div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 mb-8">
+            <h2 class="headline text-2xl font-bold mb-4">What is {{ app_name }}?</h2>
+            <div class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
+                <p class="mb-4">{{ app_name }} is a news aggregation platform focused specifically on world geopolitics. We automatically collect and categorize articles from trusted international news sources, making it easy for you to stay informed about global political developments.</p>
+                <p class="mb-4">Our platform uses intelligent categorization to organize articles by topic (conflicts, diplomacy, trade, elections, climate, technology) and by geographic region, so you can quickly find the news that matters most to you.</p>
+                <p>Articles are automatically fetched and updated every 30 minutes from our curated list of sources, ensuring you always have access to the latest developments in world affairs.</p>
+            </div>
+        </div>
+
+        <!-- Sources -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 mb-8">
+            <h2 class="headline text-2xl font-bold mb-6">📡 Our Sources</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for src in sources %}
+                <div class="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <div>
+                        <div class="font-medium">{{ src.name }}</div>
+                        <a href="{{ src.url }}" target="_blank" class="text-xs text-primary hover:underline">Visit site →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8">
+            <h2 class="headline text-2xl font-bold mb-6">✨ Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex space-x-4">
+                    <div class="text-2xl">🔄</div>
+                    <div>
+                        <h3 class="font-semibold">Auto-updating</h3>
+                        <p class="text-sm text-gray-500">New articles fetched every 30 minutes</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="text-2xl">🏷️</div>
+                    <div>
+                        <h3 class="font-semibold">Smart Categorization</h3>
+                        <p class="text-sm text-gray-500">Articles auto-tagged by topic and region</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="text-2xl">🔍</div>
+                    <div>
+                        <h3 class="font-semibold">Full-text Search</h3>
+                        <p class="text-sm text-gray-500">Find articles by keyword or topic</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="text-2xl">🌓</div>
+                    <div>
+                        <h3 class="font-semibold">Dark Mode</h3>
+                        <p class="text-sm text-gray-500">Easy on the eyes, day or night</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="text-2xl">📱</div>
+                    <div>
+                        <h3 class="font-semibold">Responsive Design</h3>
+                        <p class="text-sm text-gray-500">Works great on mobile devices</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="text-2xl">⚡</div>
+                    <div>
+                        <h3 class="font-semibold">Fast & Lightweight</h3>
+                        <p class="text-sm text-gray-500">Optimized for quick loading</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if last_update %}
+        <div class="text-center mt-8 text-sm text-gray-500">
+            Last feed update: {{ last_update.strftime('%B %d, %Y at %H:%M UTC') }}
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-gray-500">
+            © 2024 {{ app_name }} • Built with FastAPI & ❤️
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
+        if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); }
+    </script>
+</body>
+</html>

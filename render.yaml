@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: geopolitics-news
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: FEED_UPDATE_INTERVAL
+        value: "30"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+    healthCheckPath: /health
+    autoDeploy: true

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - World Geopolitics News</title>
+    <meta name="description" content="Stay informed on world geopolitics with aggregated news from trusted sources including BBC, Al Jazeera, Foreign Policy, and more.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        accent: '#dc2626',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .headline { font-family: 'Playfair Display', serif; }
+        .article-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .gradient-text { background: linear-gradient(135deg, #1e40af, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile menu styles */
+        .mobile-nav { display: none; position: fixed; top: 64px; left: 0; right: 0; background: inherit; z-index: 40; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .mobile-nav.active { display: block; }
+        @media (max-width: 768px) {
+            .desktop-search { display: none; }
+            .mobile-search { display: block; padding: 1rem; background: inherit; border-bottom: 1px solid rgba(128,128,128,0.2); }
+        }
+        @media (min-width: 769px) {
+            .mobile-search { display: none; }
+            .hamburger-btn { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <span class="text-2xl">🌍</span>
+                        <span class="headline text-xl font-bold gradient-text">{{ app_name }}</span>
+                    </a>
+                </div>
+                
+                <!-- Desktop Search -->
+                <div class="hidden md:flex items-center flex-1 max-w-lg mx-8 desktop-search">
+                    <form action="/" method="get" class="w-full" id="searchForm">
+                        <div class="relative">
+                            <input type="text" name="search" placeholder="Search news... (Press /)" value="{{ search_query or '' }}"
+                                class="w-full px-4 py-2 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent transition-all" id="searchInput">
+                            <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <a href="/about" class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary hidden md:block">About</a>
+                    
+                    <!-- User Auth Section -->
+                    {% if user %}
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="User menu">
+                            <img src="{{ user.get_gravatar_url(32) }}" alt="Avatar" class="w-8 h-8 rounded-full">
+                            <span class="hidden sm:inline text-sm font-medium">{{ user.display_name }}</span>
+                            <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg">
+                                <span class="mr-2">👤</span>My Profile
+                            </a>
+                            <a href="/profile/saved" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <span class="mr-2">🔖</span>Saved Articles
+                            </a>
+                            <a href="/profile/settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <span class="mr-2">⚙️</span>Settings
+                            </a>
+                            <hr class="border-gray-200 dark:border-gray-700 my-1">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg">
+                                <span class="mr-2">🚪</span>Logout
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="/login" class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary hidden sm:block">Login</a>
+                    <a href="/register" class="px-3 py-2 sm:px-4 bg-primary text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">Sign Up</a>
+                    {% endif %}
+                    
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle theme">
+                        <svg class="h-6 w-6 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+                        <svg class="h-6 w-6 dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    </button>
+                    
+                    <!-- Mobile hamburger -->
+                    <button onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hamburger-btn md:hidden" aria-label="Toggle menu">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Search (shown below nav) -->
+        <div class="mobile-search md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <form action="/" method="get" class="w-full">
+                <div class="relative">
+                    <input type="text" name="search" placeholder="Search news..." value="{{ search_query or '' }}"
+                        class="w-full px-4 py-3 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileNav" class="mobile-nav bg-white dark:bg-gray-800 md:hidden">
+            <div class="px-4 py-4 space-y-2">
+                <a href="/about" class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">📖 About</a>
+                {% if not user %}
+                <a href="/login" class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">🔑 Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Category Pills -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
+                <a href="/" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all {% if not current_category %}bg-primary text-white shadow-lg{% else %}bg-gray-100 dark:bg-gray-700 hover:bg-gray-200{% endif %}">🌐 All News</a>
+                {% for cat in categories %}
+                <a href="/?category={{ cat.slug }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all {% if current_category == cat.slug %}bg-primary text-white shadow-lg{% else %}bg-gray-100 dark:bg-gray-700 hover:bg-gray-200{% endif %}">{{ cat.icon }} {{ cat.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="bg-gray-100 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                    {% if search_query %}<span class="font-medium">{{ total_articles }}</span> results for "{{ search_query }}" <a href="/" class="text-primary hover:underline ml-2">Clear</a>
+                    {% elif current_date %}<span class="font-medium">{{ total_articles }}</span> articles from <span class="font-medium">{{ current_date }}</span> <a href="/" class="text-primary hover:underline ml-2">Clear</a>
+                    {% elif current_category or current_region %}<span class="font-medium">{{ total_articles }}</span> articles <a href="/" class="text-primary hover:underline ml-2">Clear filters</a>
+                    {% else %}<span class="font-medium">{{ total_articles }}</span> articles from <span class="font-medium">{{ sources|length }}</span> sources{% endif %}
+                </div>
+                <div class="hidden sm:block">Page {{ current_page }} of {{ total_pages }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex-1">
+                {% if articles %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for article in articles %}
+                    <article class="article-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 fade-in">
+                        {% if article.image_url %}
+                        <a href="/article/{{ article.id }}" class="block overflow-hidden">
+                            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'w-full h-48 bg-gradient-to-br from-primary to-accent flex items-center justify-center\'><span class=\'text-6xl\'>🌍</span></div>'">
+                        </a>
+                        {% else %}
+                        <a href="/article/{{ article.id }}"><div class="w-full h-48 bg-gradient-to-br from-primary to-accent flex items-center justify-center"><span class="text-6xl">🌍</span></div></a>
+                        {% endif %}
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                {% if article.source %}<span class="text-xs font-semibold text-primary uppercase">{{ article.source.name }}</span>{% endif %}
+                                {% if article.published_at %}<time class="text-xs text-gray-500">{{ article.published_at.strftime('%b %d, %Y') }}</time>{% endif %}
+                            </div>
+                            <h3 class="headline text-lg font-bold mb-2 line-clamp-2 hover:text-primary"><a href="/article/{{ article.id }}">{{ article.title }}</a></h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">{{ article.summary[:200] }}{% if article.summary|length > 200 %}...{% endif %}</p>
+                            <div class="flex flex-wrap gap-2">
+                                {% if article.category %}<a href="/?category={{ article.category.slug }}" class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200">{{ article.category.icon }} {{ article.category.name }}</a>{% endif %}
+                                {% if article.region %}<a href="/?region={{ article.region.slug }}" class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-200">{{ article.region.icon }} {{ article.region.name }}</a>{% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <nav class="mt-8 flex justify-center">
+                    <ul class="flex items-center space-x-2">
+                        {% if current_page > 1 %}<li><a href="?page={{ current_page - 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_region %}&region={{ current_region }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}" class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50">← Prev</a></li>{% endif %}
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == current_page %}<li><span class="px-4 py-2 rounded-lg bg-primary text-white font-medium">{{ p }}</span></li>
+                            {% elif p == 1 or p == total_pages or (p >= current_page - 2 and p <= current_page + 2) %}<li><a href="?page={{ p }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_region %}&region={{ current_region }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}" class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50">{{ p }}</a></li>
+                            {% elif p == current_page - 3 or p == current_page + 3 %}<li><span class="px-2">...</span></li>{% endif %}
+                        {% endfor %}
+                        {% if current_page < total_pages %}<li><a href="?page={{ current_page + 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_region %}&region={{ current_region }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}" class="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50">Next →</a></li>{% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-16">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 mb-6"><span class="text-4xl">📰</span></div>
+                    <h3 class="text-xl font-semibold mb-2">No articles found</h3>
+                    <p class="text-gray-500 mb-6">Try adjusting your filters or search terms</p>
+                    <a href="/" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700">View All Articles</a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <aside class="lg:w-80 space-y-6">
+                <!-- Calendar Widget -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+                    <h3 class="font-bold text-lg mb-4">📅 Browse by Date</h3>
+                    <div id="calendar" class="calendar-widget">
+                        <div class="flex items-center justify-between mb-4">
+                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <span id="calendarMonth" class="font-semibold text-lg"></span>
+                            <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+                            <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                        </div>
+                        <div id="calendarDays" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
+                    </div>
+                    {% if current_date %}
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                Showing: <strong>{{ current_date }}</strong>
+                            </span>
+                            <a href="/" class="text-xs text-primary hover:underline">Clear</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+                    <h3 class="font-bold text-lg mb-4">🗺️ Regions</h3>
+                    <div class="space-y-1">
+                        {% for reg in regions %}
+                        <a href="/?region={{ reg.slug }}" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 {% if current_region == reg.slug %}bg-blue-50 dark:bg-blue-900/20 border-l-4 border-primary{% endif %}">
+                            <span>{{ reg.icon }} {{ reg.name }}</span>
+                            <span class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{{ reg.articles|length }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+                    <h3 class="font-bold text-lg mb-4">📡 Sources</h3>
+                    <div class="space-y-3">
+                        {% for src in sources[:10] %}
+                        <div class="flex items-center space-x-3"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><span class="text-sm">{{ src.name }}</span></div>
+                        {% endfor %}
+                    </div>
+                    <a href="/about" class="block mt-4 text-sm text-primary hover:underline">View all sources →</a>
+                </div>
+                
+                <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-md p-5 text-white">
+                    <h3 class="font-bold text-lg mb-3">🔥 Hot Topics</h3>
+                    <ul class="space-y-2 text-sm">
+           Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            mobileNav.classList.toggle('active');
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const mobileNav = document.getElementById('mobileNav');
+            const hamburger = document.querySelector('.hamburger-btn');
+            if (mobileNav && !mobileNav.contains(e.target) && !hamburger?.contains(e.target)) {
+                mobileNav.classList.remove('active');
+            }
+        });
+        
+        //              <li><a href="/?search=ukraine" class="hover:underline opacity-90">Ukraine-Russia Conflict</a></li>
+                        <li><a href="/?search=china" class="hover:underline opacity-90">US-China Relations</a></li>
+                        <li><a href="/?search=gaza" class="hover:underline opacity-90">Gaza Crisis</a></li>
+                        <li><a href="/?search=climate" class="hover:underline opacity-90">Climate Politics</a></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0"><span class="text-2xl">🌍</span><span class="headline font-bold gradient-text">{{ app_name }}</span></div>
+                <div class="flex items-center space-x-6 text-sm text-gray-500">
+                    <a href="/about" class="hover:text-primary">About</a>
+                    <a href="/health" class="hover:text-primary">Status</a>
+                    <span>© 2024</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
+        if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); }
+        document.addEventListener('keydown', function(e) { if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); document.getElementById('searchInput')?.focus(); } });
+        
+        // Calendar functionality
+        let currentCalendarDate = new Date();
+        const selectedDate = '{{ current_date or "" }}';
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            let html = '';
+            
+            // Empty cells for days before first day of month
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="p-2"></div>';
+            }
+            
+            // Days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+                const isSelected = dateStr === selectedDate;
+                const isFuture = new Date(year, month, day) > today;
+                
+                let classes = 'p-2 rounded-lg cursor-pointer transition-all ';
+                
+                if (isSelected) {
+                    classes += 'bg-primary text-white font-bold';
+                } else if (isToday) {
+                    classes += 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold';
+                } else if (isFuture) {
+                    classes += 'text-gray-300 dark:text-gray-600 cursor-not-allowed';
+                } else {
+                    classes += 'hover:bg-gray-100 dark:hover:bg-gray-700';
+                }
+                
+                if (isFuture) {
+                    html += `<div class="${classes}">${day}</div>`;
+                } else {
+                    html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${day}</div>`;
+                }
+            }
+            
+            document.getElementById('calendarDays').innerHTML = html;
+        }
+        
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+        
+        function selectDate(dateStr) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('date', dateStr);
+            params.delete('page'); // Reset pagination
+            window.location.href = `/?${params.toString()}`;
+        }
+        
+        // Initialize calendar
+        if (selectedDate) {
+            currentCalendarDate = new Date(selectedDate + 'T00:00:00');
+        }
+        renderCalendar();
+    </script>
+</body>
+</html>

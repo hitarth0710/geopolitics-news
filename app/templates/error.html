@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error {{ status_code }} - {{ app_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center">
+    <div class="text-center px-4">
+        <div class="text-8xl mb-6">
+            {% if status_code == 404 %}🔍{% elif status_code == 500 %}⚠️{% elif status_code == 429 %}🚦{% else %}❌{% endif %}
+        </div>
+        <h1 class="text-6xl font-bold mb-4">{{ status_code }}</h1>
+        <h2 class="text-2xl font-semibold mb-4">
+            {% if status_code == 404 %}Page Not Found
+            {% elif status_code == 500 %}Internal Server Error
+            {% elif status_code == 429 %}Too Many Requests
+            {% elif status_code == 503 %}Service Unavailable
+            {% else %}Something Went Wrong{% endif %}
+        </h2>
+        <p class="text-gray-500 mb-8 max-w-md mx-auto">
+            {% if status_code == 404 %}The page you're looking for doesn't exist or has been moved.
+            {% elif status_code == 500 %}We're having trouble processing your request. Please try again later.
+            {% elif status_code == 429 %}You've made too many requests. Please wait a moment and try again.
+            {% elif status_code == 503 %}Our service is temporarily unavailable. Please try again shortly.
+            {% else %}{{ message }}{% endif %}
+        </p>
+        <div class="space-x-4">
+            <a href="/" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                ← Back to Home
+            </a>
+            <button onclick="location.reload()" class="inline-block px-6 py-3 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Try Again
+            </button>
+        </div>
+    </div>
+    <script>if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); }</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - GeoWatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 800: '#1a1a2e', 900: '#0f0f1a' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark-900 text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-dark-800 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-globe text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        GeoWatch
+                    </span>
+                </a>
+                
+                <nav class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="/about" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-info-circle mr-2"></i>About
+                    </a>
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+                            <img src="{{ user.get_gravatar_url(32) }}" alt="Avatar" class="w-8 h-8 rounded-full">
+                            <span>{{ user.display_name }}</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-dark-800 rounded-lg shadow-xl border border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded-t-lg">
+                                <i class="fas fa-user mr-2"></i>My Profile
+                            </a>
+                            <a href="/profile/saved" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50">
+                                <i class="fas fa-bookmark mr-2"></i>Saved Articles
+                            </a>
+                            <a href="/profile/settings" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50">
+                                <i class="fas fa-cog mr-2"></i>Settings
+                            </a>
+                            <hr class="border-gray-700 my-1">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 rounded-b-lg">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Success/Error Messages -->
+        {% if success %}
+        <div class="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-lg mb-6">
+            <i class="fas fa-check-circle mr-2"></i>{{ success }}
+        </div>
+        {% endif %}
+        
+        {% if error %}
+        <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-6">
+            <i class="fas fa-exclamation-circle mr-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Profile Header -->
+        <div class="bg-dark-800 rounded-2xl p-8 mb-8 border border-gray-800">
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                <img 
+                    src="{{ user.get_gravatar_url(120) }}" 
+                    alt="{{ user.display_name }}" 
+                    class="w-24 h-24 rounded-full ring-4 ring-purple-500/30"
+                >
+                <div class="text-center md:text-left flex-1">
+                    <h1 class="text-2xl font-bold">{{ user.display_name }}</h1>
+                    <p class="text-gray-400">@{{ user.username }}</p>
+                    {% if user.bio %}
+                    <p class="mt-2 text-gray-300">{{ user.bio }}</p>
+                    {% endif %}
+                    <p class="mt-2 text-sm text-gray-500">
+                        <i class="fas fa-calendar mr-1"></i>Member for {{ account_age }} days
+                    </p>
+                </div>
+                <a 
+                    href="/profile/settings" 
+                    class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                    <i class="fas fa-edit mr-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-dark-800 rounded-xl p-6 border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Saved Articles</p>
+                        <p class="text-3xl font-bold text-blue-400">{{ saved_count }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-bookmark text-blue-400 text-xl"></i>
+                    </div>
+                </div>
+                <a href="/profile/saved" class="mt-4 inline-block text-sm text-blue-400 hover:text-blue-300">
+                    View all <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+
+            <div class="bg-dark-800 rounded-xl p-6 border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Articles Read</p>
+                        <p class="text-3xl font-bold text-purple-400">{{ history_count }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-book-open text-purple-400 text-xl"></i>
+                    </div>
+                </div>
+                <a href="/profile/history" class="mt-4 inline-block text-sm text-purple-400 hover:text-purple-300">
+                    View history <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+
+            <div class="bg-dark-800 rounded-xl p-6 border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Account Status</p>
+                        <p class="text-xl font-bold text-green-400">
+                            {% if user.is_verified %}
+                            <i class="fas fa-check-circle mr-1"></i>Verified
+                            {% else %}
+                            <i class="fas fa-clock mr-1"></i>Unverified
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-green-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Recent Saved Articles -->
+            <div class="bg-dark-800 rounded-xl p-6 border border-gray-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">
+                        <i class="fas fa-bookmark text-blue-400 mr-2"></i>Recent Saved
+                    </h2>
+                    <a href="/profile/saved" class="text-sm text-blue-400 hover:text-blue-300">
+                        View all
+                    </a>
+                </div>
+                
+                {% if recent_saved %}
+                <div class="space-y-3">
+                    {% for article in recent_saved %}
+                    <a 
+                        href="/article/{{ article.id }}" 
+                        class="block p-3 bg-dark-900 rounded-lg hover:bg-gray-800/50 transition-colors"
+                    >
+                        <h3 class="text-sm font-medium text-gray-200 line-clamp-2">{{ article.title }}</h3>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ article.source.name if article.source else 'Unknown' }} • 
+                            {{ article.published_at.strftime('%b %d') if article.published_at else '' }}
+                        </p>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-bookmark text-4xl mb-3"></i>
+                    <p>No saved articles yet</p>
+                    <a href="/" class="text-blue-400 hover:text-blue-300 text-sm">
+                        Start exploring
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Preferences Summary -->
+            <div class="bg-dark-800 rounded-xl p-6 border border-gray-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">
+                        <i class="fas fa-sliders-h text-purple-400 mr-2"></i>Your Preferences
+                    </h2>
+                    <a href="/profile/settings" class="text-sm text-purple-400 hover:text-purple-300">
+                        Edit
+                    </a>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-400 mb-2">Preferred Categories</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% if user.preferred_category_list %}
+                                {% for cat in user.preferred_category_list %}
+                                <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
+                                    {{ cat }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-500 text-sm">All categories</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-400 mb-2">Preferred Regions</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% if user.preferred_region_list %}
+                                {% for reg in user.preferred_region_list %}
+                                <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">
+                                    {{ reg }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-500 text-sm">All regions</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Dark Mode</span>
+                            <span class="text-sm {% if user.dark_mode %}text-green-400{% else %}text-gray-500{% endif %}">
+                                {% if user.dark_mode %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-sm text-gray-400">Email Digest</span>
+                            <span class="text-sm {% if user.email_digest %}text-green-400{% else %}text-gray-500{% endif %}">
+                                {% if user.email_digest %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-800 border-t border-gray-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
+            <p>© 2024 GeoWatch. World geopolitics at your fingertips.</p>
+        </div>
+    </footer>
+</body>
+</html>
