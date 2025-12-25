@@ -125,6 +125,30 @@ class Session(Base):
         return datetime.utcnow() > self.expires_at
 
 
+class PasswordResetToken(Base):
+    """Token for password reset requests."""
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String(64), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)
+    
+    user = relationship("User")
+    
+    @property
+    def is_expired(self) -> bool:
+        """Check if token has expired."""
+        return datetime.utcnow() > self.expires_at
+    
+    @property
+    def is_valid(self) -> bool:
+        """Check if token is still valid."""
+        return not self.is_used and not self.is_expired
+
+
 class Source(Base):
     """News source (e.g., BBC, Reuters, Al Jazeera)."""
     __tablename__ = "sources"

@@ -5,12 +5,13 @@ from typing import Optional
 from fastapi import Request, Response, HTTPException
 from sqlalchemy.orm import Session as DBSession
 
-from .models import User, Session
+from .models import User, Session, PasswordResetToken
 from .settings import settings
 
 
 SESSION_COOKIE_NAME = "session_id"
 SESSION_EXPIRY_DAYS = 7
+PASSWORD_RESET_EXPIRY_HOURS = 1
 
 
 def create_session(
@@ -146,3 +147,61 @@ def validate_username(username: str) -> tuple[bool, str]:
     if not re.match(r'^[a-zA-Z0-9_]+$', username):
         return False, "Username can only contain letters, numbers, and underscores"
     return True, ""
+
+
+def create_password_reset_token(db: DBSession, user: User) -> str:
+    """Create a password reset token for user."""
+    # Invalidate any existing tokens for this user
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.is_used == False
+    ).update({"is_used": True})
+    
+    # Create new token
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=PASSWORD_RESET_EXPIRY_HOURS)
+    
+    reset_token = PasswordResetToken(
+        token=token,
+        user_id=user.id,
+        expires_at=expires_at
+    )
+    db.add(reset_token)
+    db.commit()
+    
+    return token
+
+
+def get_password_reset_token(db: DBSession, token: str) -> Optional[PasswordResetToken]:
+    """Get a valid password reset token."""
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token
+    ).first()
+    
+    if not reset_token:
+        return None
+    
+    if not reset_token.is_valid:
+        return None
+    
+    return reset_token
+
+
+def use_password_reset_token(db: DBSession, token: PasswordResetToken, new_password: str):
+    """Use a password reset token to change password."""
+    user = token.user
+    user.set_password(new_password)
+    token.is_used = True
+    
+    # Invalidate all user sessions for security
+    invalidate_all_user_sessions(db, user.id)
+    
+    db.commit()
+
+
+def cleanup_expired_reset_tokens(db: DBSession):
+    """Clean up expired password reset tokens."""
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.expires_at < datetime.utcnow()
+    ).delete()
+    db.commit()

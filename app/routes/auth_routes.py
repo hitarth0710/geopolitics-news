@@ -16,6 +16,9 @@ from ..auth import (
     validate_password,
     validate_email,
     validate_username,
+    create_password_reset_token,
+    get_password_reset_token,
+    use_password_reset_token,
     SESSION_COOKIE_NAME
 )
 
@@ -240,3 +243,166 @@ async def logout(
     clear_session_cookie(response)
     
     return response
+
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Render forgot password page."""
+    # If already logged in, redirect to home
+    user = get_current_user(db, request)
+    if user:
+        return RedirectResponse(url="/", status_code=302)
+    
+    return templates.TemplateResponse(
+        "auth/forgot_password.html",
+        {
+            "request": request,
+            "error": None,
+            "success": None
+        }
+    )
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request: Request,
+    db: Session = Depends(get_db),
+    email: str = Form(...)
+):
+    """Process forgot password form."""
+    # Find user by email
+    user = db.query(User).filter(User.email == email.lower()).first()
+    
+    # Always show success message to prevent email enumeration
+    success_message = "If an account with that email exists, you will receive a password reset link."
+    
+    if user and user.is_active:
+        # Create reset token
+        token = create_password_reset_token(db, user)
+        
+        # In a real app, you'd send an email here
+        # For now, we'll show the reset link directly (for demo purposes)
+        reset_url = f"/reset-password?token={token}"
+        success_message = f"Password reset link generated! <a href='{reset_url}' class='text-blue-400 hover:underline'>Click here to reset your password</a>. <br><small class='text-gray-500'>(In production, this link would be sent via email)</small>"
+    
+    return templates.TemplateResponse(
+        "auth/forgot_password.html",
+        {
+            "request": request,
+            "error": None,
+            "success": success_message
+        }
+    )
+
+
+@router.get("/reset-password", response_class=HTMLResponse)
+async def reset_password_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    token: str = None
+):
+    """Render reset password page."""
+    # If already logged in, redirect to home
+    user = get_current_user(db, request)
+    if user:
+        return RedirectResponse(url="/", status_code=302)
+    
+    if not token:
+        return templates.TemplateResponse(
+            "auth/reset_password.html",
+            {
+                "request": request,
+                "token": None,
+                "error": "Invalid or missing reset token. Please request a new password reset.",
+                "success": None
+            }
+        )
+    
+    # Verify token is valid
+    reset_token = get_password_reset_token(db, token)
+    if not reset_token:
+        return templates.TemplateResponse(
+            "auth/reset_password.html",
+            {
+                "request": request,
+                "token": None,
+                "error": "This reset link has expired or already been used. Please request a new password reset.",
+                "success": None
+            }
+        )
+    
+    return templates.TemplateResponse(
+        "auth/reset_password.html",
+        {
+            "request": request,
+            "token": token,
+            "error": None,
+            "success": None
+        }
+    )
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request: Request,
+    db: Session = Depends(get_db),
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    """Process reset password form."""
+    # Verify token
+    reset_token = get_password_reset_token(db, token)
+    if not reset_token:
+        return templates.TemplateResponse(
+            "auth/reset_password.html",
+            {
+                "request": request,
+                "token": None,
+                "error": "This reset link has expired or already been used. Please request a new password reset.",
+                "success": None
+            }
+        )
+    
+    # Validate password
+    valid, msg = validate_password(password)
+    if not valid:
+        return templates.TemplateResponse(
+            "auth/reset_password.html",
+            {
+                "request": request,
+                "token": token,
+                "error": msg,
+                "success": None
+            },
+            status_code=400
+        )
+    
+    # Check password confirmation
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "auth/reset_password.html",
+            {
+                "request": request,
+                "token": token,
+                "error": "Passwords do not match",
+                "success": None
+            },
+            status_code=400
+        )
+    
+    # Reset password
+    use_password_reset_token(db, reset_token, password)
+    
+    return templates.TemplateResponse(
+        "auth/reset_password.html",
+        {
+            "request": request,
+            "token": None,
+            "error": None,
+            "success": "Your password has been reset successfully! You can now <a href='/login' class='text-blue-400 hover:underline'>log in</a> with your new password."
+        }
+    )
