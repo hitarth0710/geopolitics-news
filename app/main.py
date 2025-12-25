@@ -2,7 +2,7 @@
 import asyncio
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, Query, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -107,10 +107,7 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     
-    # Initial feed fetch
-    await update_feeds()
-    
-    # Start scheduler for periodic updates
+    # Start scheduler for periodic updates (initial fetch happens after startup)
     scheduler.add_job(
         update_feeds, 
         'interval', 
@@ -134,6 +131,15 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     logger.info(f"Scheduler started - feeds update every {settings.feed_update_interval} minutes")
+    
+    # Schedule initial feed fetch to run after startup (delayed by 5 seconds to let health checks pass)
+    scheduler.add_job(
+        update_feeds,
+        'date',
+        run_date=datetime.now() + timedelta(seconds=5),
+        id='initial_feed_fetch'
+    )
+    logger.info("Initial feed fetch scheduled")
     
     yield
     
