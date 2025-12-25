@@ -20,8 +20,3 @@ FEED_UPDATE_INTERVAL = int(os.getenv("FEED_UPDATE_INTERVAL", "30"))
 # Application settings
 APP_NAME = "GeoPolitics Watch"
 APP_DESCRIPTION = "Your window to world geopolitics"
-
-
-def ensure_data_dir():
-    """Ensure data directory exists. Call this at app startup."""
-    os.makedirs(DATA_DIR, exist_ok=True)
