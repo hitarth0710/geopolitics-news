@@ -3,7 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from .config import DATABASE_URL
+from .config import DATABASE_URL, ensure_data_dir
+
+# Ensure data directory exists before creating engine
+ensure_data_dir()
 
 engine = create_engine(
     DATABASE_URL, 
