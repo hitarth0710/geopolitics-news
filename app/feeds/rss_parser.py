@@ -1,12 +1,17 @@
 """RSS feed parser for fetching articles from various sources."""
 import feedparser
 import httpx
+import asyncio
 from datetime import datetime
 from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
 import re
 
 from .sources import RSS_FEEDS, CATEGORY_KEYWORDS, REGION_KEYWORDS
+
+
+# Global stats for monitoring
+_fetch_stats = {"success": 0, "failed": 0, "articles": 0}
 
 
 def parse_date(date_str: Optional[str]) -> Optional[datetime]:
@@ -23,9 +28,13 @@ def parse_date(date_str: Optional[str]) -> Optional[datetime]:
         formats = [
             "%a, %d %b %Y %H:%M:%S %z",
             "%a, %d %b %Y %H:%M:%S GMT",
+            "%a, %d %b %Y %H:%M:%S %Z",
             "%Y-%m-%dT%H:%M:%S%z",
             "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%f%z",
             "%Y-%m-%d %H:%M:%S",
+            "%d %b %Y %H:%M:%S %z",
+            "%Y-%m-%d",
         ]
         
         for fmt in formats:
@@ -119,14 +128,37 @@ async def fetch_feed(feed_url: str, timeout: int = 30) -> Optional[feedparser.Fe
                 feed_url,
                 timeout=timeout,
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
+                    'Accept-Language': 'en-US,en;q=0.9',
                 }
             )
             response.raise_for_status()
             return feedparser.parse(response.text)
+    except httpx.TimeoutException:
+        print(f"Timeout fetching feed {feed_url}")
+        return None
+    except httpx.HTTPStatusError as e:
+        print(f"HTTP error fetching feed {feed_url}: {e.response.status_code}")
+        return None
     except Exception as e:
         print(f"Error fetching feed {feed_url}: {e}")
         return None
+
+
+async def fetch_single_source(feed_config: dict) -> List[Dict]:
+    """Fetch articles from a single source."""
+    feed = await fetch_feed(feed_config['feed_url'])
+    if feed:
+        articles = parse_feed_entries(feed, feed_config['name'])
+        if articles:
+            _fetch_stats["success"] += 1
+            _fetch_stats["articles"] += len(articles)
+            print(f"✓ Fetched {len(articles)} articles from {feed_config['name']}")
+            return articles
+    _fetch_stats["failed"] += 1
+    print(f"✗ Failed to fetch from {feed_config['name']}")
+    return []
 
 
 def parse_feed_entries(feed: feedparser.FeedParserDict, source_name: str) -> List[Dict]:
@@ -157,16 +189,45 @@ def parse_feed_entries(feed: feedparser.FeedParserDict, source_name: str) -> Lis
     return articles
 
 
-async def fetch_all_feeds() -> List[Dict]:
-    """Fetch articles from all configured RSS feeds."""
-    all_articles = []
+async def fetch_all_feeds(max_concurrent: int = 10) -> List[Dict]:
+    """Fetch articles from all configured RSS feeds concurrently."""
+    global _fetch_stats
+    _fetch_stats = {"success": 0, "failed": 0, "articles": 0}
     
+    all_articles = []
+    all_feed_configs = []
+    
+    # Collect all feed configurations
     for category, feeds in RSS_FEEDS.items():
         for feed_config in feeds:
-            feed = await fetch_feed(feed_config['feed_url'])
-            if feed:
-                articles = parse_feed_entries(feed, feed_config['name'])
-                all_articles.extend(articles)
-                print(f"Fetched {len(articles)} articles from {feed_config['name']}")
+            all_feed_configs.append(feed_config)
+    
+    print(f"\n📡 Fetching from {len(all_feed_configs)} sources...")
+    
+    # Use semaphore to limit concurrent requests
+    semaphore = asyncio.Semaphore(max_concurrent)
+    
+    async def fetch_with_semaphore(feed_config):
+        async with semaphore:
+            return await fetch_single_source(feed_config)
+    
+    # Fetch all feeds concurrently
+    tasks = [fetch_with_semaphore(config) for config in all_feed_configs]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    # Collect results
+    for result in results:
+        if isinstance(result, list):
+            all_articles.extend(result)
+        elif isinstance(result, Exception):
+            print(f"Task error: {result}")
+    
+    print(f"\n📊 Fetch complete: {_fetch_stats['success']} sources successful, {_fetch_stats['failed']} failed")
+    print(f"📰 Total articles fetched: {len(all_articles)}")
     
     return all_articles
+
+
+def get_fetch_stats() -> Dict:
+    """Get the latest fetch statistics."""
+    return _fetch_stats.copy()
