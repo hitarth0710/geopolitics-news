@@ -16,13 +16,13 @@ _SessionLocal = None
 _db_url = None
 
 
-def _wait_for_volume(max_wait_seconds=30):
+def _wait_for_volume(max_wait_seconds=10):
     """Wait for the Railway volume to be mounted."""
     # Railway volume can be at /data or custom path from env
     mount_path = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH") or os.environ.get("DATA_DIR") or "/data"
     start_time = time.time()
     
-    print(f"🔄 Waiting for volume at {mount_path}...")
+    print(f"🔄 Checking volume at {mount_path}...")
     
     while time.time() - start_time < max_wait_seconds:
         try:
@@ -43,7 +43,15 @@ def _wait_for_volume(max_wait_seconds=30):
                 print(f"✅ Volume mounted successfully at {mount_path}")
                 return mount_path
                 
-        except (OSError, IOError, PermissionError) as e:
+        except PermissionError as e:
+            # Permission denied - volume may need chmod first, skip waiting
+            print(f"⚠️ Permission denied on {mount_path}, trying chmod...")
+            try:
+                os.system(f"chmod 777 {mount_path} 2>/dev/null")
+            except:
+                pass
+            time.sleep(1)
+        except (OSError, IOError) as e:
             elapsed = int(time.time() - start_time)
             print(f"⏳ Waiting for volume... ({elapsed}s) - {e}")
             time.sleep(1)
