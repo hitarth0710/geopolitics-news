@@ -23,23 +23,16 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
-# Create data directory for SQLite with proper permissions
-# This must be done before switching to non-root user
-RUN mkdir -p /data && chown -R appuser:appuser /data && chmod 755 /data
+# Create data directory for SQLite (Railway volumes are root-owned)
+RUN mkdir -p /data
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
-COPY --chown=appuser:appuser app/ app/
-COPY --chown=appuser:appuser static/ static/
-
-# Create data directory for SQLite
-RUN mkdir -p /app/data && chown appuser:appuser /app/data
+COPY app/ app/
+COPY static/ static/
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -58,9 +51,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"
 
-# Switch to non-root user
-USER appuser
-
+# Run as root for Railway volume access (volumes are mounted as root)
 # Run with Gunicorn
 CMD ["gunicorn", "app.main:app", \
      "-w", "4", \
