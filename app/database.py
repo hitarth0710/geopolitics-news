@@ -35,10 +35,16 @@ def get_session_local():
     return _SessionLocal
 
 
+# Alias for backwards compatibility
+def SessionLocal():
+    """Create a new database session (backwards compatible)."""
+    return get_session_local()()
+
+
 def get_db():
     """Dependency for getting database session."""
-    SessionLocal = get_session_local()
-    db = SessionLocal()
+    session_factory = get_session_local()
+    db = session_factory()
     try:
         yield db
     finally:
