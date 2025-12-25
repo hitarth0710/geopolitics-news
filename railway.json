@@ -4,10 +4,10 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "chmod -R 777 /data 2>/dev/null || true && gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:${PORT:-8000}",
+    "startCommand": "chmod 777 /data 2>/dev/null || true; gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:${PORT:-8000} --timeout 120",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 60
+    "healthcheckTimeout": 120
   }
 }
