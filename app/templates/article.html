@@ -19,6 +19,7 @@
         }
     </script>
     <link rel="stylesheet" href="/static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         
@@ -31,10 +32,18 @@
         }
         
         .gradient-text {
-            background: linear-gradient(135deg, #1e40af, #dc2626);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: rotate-gradient 5s ease infinite;
+        }
+        
+        @keyframes rotate-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .article-content {
@@ -46,14 +55,21 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse"></div>
+        <div class="absolute -right-4 top-1/2 w-72 h-72 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
     <!-- Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-xl">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <span class="text-2xl">🌍</span>
+                    <a href="/" class="flex items-center space-x-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <span class="text-xl">🌍</span>
+                        </div>
                         <span class="headline text-xl font-bold gradient-text">{{ app_name }}</span>
                     </a>
                 </div>
@@ -76,8 +92,8 @@
     </nav>
 
     <!-- Article Content -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <article class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <main class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <article class="glass rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50 page-transition">
             <!-- Hero Image -->
             {% if article.image_url %}
             <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-64 md:h-96 object-cover" onerror="this.style.display='none'">
@@ -124,7 +140,7 @@
                     <!-- Bookmark Button -->
                     {% if user %}
                     <button id="bookmarkBtn" onclick="toggleBookmark({{ article.id }})" 
-                        class="ml-auto px-4 py-1 text-sm rounded-full border transition-colors {% if is_saved %}bg-yellow-100 dark:bg-yellow-900 border-yellow-400 text-yellow-800 dark:text-yellow-200{% else %}bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/50{% endif %}">
+                        class="ml-auto badge-modern px-4 py-2 text-sm rounded-full border transition-all {% if is_saved %}bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg glow{% else %}bg-white/80 dark:bg-gray-700/80 border-gray-300 dark:border-gray-600 hover:shadow-lg{% endif %}">
                         <span id="bookmarkIcon">{% if is_saved %}🔖{% else %}📑{% endif %}</span>
                         <span id="bookmarkText">{% if is_saved %}Saved{% else %}Save{% endif %}</span>
                     </button>
@@ -157,9 +173,9 @@
                 <!-- Read Original -->
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" 
-                       class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                       class="btn-modern inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all font-semibold shadow-xl hover:shadow-2xl text-lg">
                         Read Full Article at {{ article.source.name if article.source else 'Source' }}
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                         </svg>
                     </a>
@@ -170,10 +186,10 @@
         <!-- Related Articles -->
         {% if related %}
         <section class="mt-12">
-            <h2 class="headline text-2xl font-bold mb-6">Related Articles</h2>
+            <h2 class="headline text-2xl font-bold mb-6 gradient-text">Related Articles</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {% for rel in related %}
-                <a href="/article/{{ rel.id }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition-shadow">
+                <a href="/article/{{ rel.id }}" class="glass rounded-xl shadow-xl p-5 hover:shadow-2xl transition-all hover:scale-105 border border-white/20 dark:border-gray-700/50">
                     <div class="flex items-center space-x-2 mb-2">
                         {% if rel.source %}
                         <span class="text-xs font-semibold text-primary uppercase">{{ rel.source.name }}</span>
@@ -191,11 +207,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+    <footer class="glass border-t border-gray-200/50 dark:border-gray-700/50 mt-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-2 mb-4 md:mb-0">
-                    <span class="text-2xl">🌍</span>
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-xl">🌍</span>
+                    </div>
                     <span class="headline font-bold gradient-text">{{ app_name }}</span>
                 </div>
                 <p class="text-sm text-gray-500">
@@ -232,8 +250,7 @@
                         isSaved = false;
                         icon.textContent = '📑';
                         text.textContent = 'Save';
-                        btn.className = btn.className.replace(/bg-yellow-\S+/g, 'bg-gray-100').replace(/border-yellow-\S+/g, 'border-gray-300').replace(/text-yellow-\S+/g, '');
-                        btn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'border-gray-300', 'dark:border-gray-600');
+                        btn.className = 'ml-auto badge-modern px-4 py-2 text-sm rounded-full border transition-all bg-white/80 dark:bg-gray-700/80 border-gray-300 dark:border-gray-600 hover:shadow-lg';
                     }
                 } else {
                     // Add bookmark
@@ -242,8 +259,7 @@
                         isSaved = true;
                         icon.textContent = '🔖';
                         text.textContent = 'Saved';
-                        btn.className = btn.className.replace(/bg-gray-\S+/g, '').replace(/border-gray-\S+/g, '');
-                        btn.classList.add('bg-yellow-100', 'dark:bg-yellow-900', 'border-yellow-400', 'text-yellow-800', 'dark:text-yellow-200');
+                        btn.className = 'ml-auto badge-modern px-4 py-2 text-sm rounded-full border transition-all bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg glow';
                     }
                 }
             } catch (error) {
