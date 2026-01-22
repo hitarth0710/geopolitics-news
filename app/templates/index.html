@@ -22,15 +22,27 @@
     </script>
     <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="/static/css/advanced.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .headline { font-family: 'Playfair Display', serif; }
-        .article-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .gradient-text { background: linear-gradient(135deg, #1e40af, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Enhanced Gradient Text */
+        .gradient-text { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+            animation: gradient-flow 8s ease infinite;
+        }
+        
+        @keyframes gradient-flow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
         
         /* Mobile menu styles */
         .mobile-nav { display: none; position: fixed; top: 64px; left: 0; right: 0; background: inherit; z-index: 40; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -48,20 +60,24 @@
 <body class="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
     <!-- Background Decoration -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse"></div>
-        <div class="absolute top-1/3 -right-4 w-72 h-72 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
-        <div class="absolute bottom-0 left-1/3 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 4s;"></div>
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" data-parallax="0.1"></div>
+        <div class="absolute top-1/3 -right-4 w-72 h-72 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" style="animation-delay: 2s;" data-parallax="0.15"></div>
+        <div class="absolute bottom-0 left-1/3 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" style="animation-delay: 4s;" data-parallax="0.2"></div>
+        <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-cyan-300 dark:bg-cyan-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-15 morph-shape particle" style="animation-delay: 6s;" data-parallax="0.25"></div>
     </div>
+    
+    <!-- Dot Matrix Pattern -->
+    <div class="fixed inset-0 dot-matrix opacity-30 dark:opacity-10 pointer-events-none"></div>
     <!-- Navigation -->
-    <nav class="glass sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+    <nav class="glass-pro sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-2xl noise-texture">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="/" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-300 tilt-3d shadow-colored">
                             <span class="text-xl">🌍</span>
                         </div>
-                        <span class="headline text-2xl font-bold gradient-text">{{ app_name }}</span>
+                        <span class="headline text-2xl font-bold gradient-text neon-glow">{{ app_name }}</span>
                     </a>
                 </div>
                 
@@ -148,12 +164,12 @@
     </nav>
 
     <!-- Category Pills -->
-    <div class="glass border-b border-gray-200/50 dark:border-gray-700/50">
+    <div class="glass-pro border-b border-gray-200/50 dark:border-gray-700/50 noise-texture">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex space-x-3 overflow-x-auto scrollbar-hide pb-1">
-                <a href="/" class="chip-modern px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if not current_category %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg glow{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %}">🌐 All News</a>
+                <a href="/" class="chip-modern btn-magnetic px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if not current_category %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl shadow-colored{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %} bloom">🌐 All News</a>
                 {% for cat in categories %}
-                <a href="/?category={{ cat.slug }}" class="chip-modern px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if current_category == cat.slug %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg glow{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %}">{{ cat.icon }} {{ cat.name }}</a>
+                <a href="/?category={{ cat.slug }}" class="chip-modern btn-magnetic px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if current_category == cat.slug %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl shadow-colored{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %} bloom">{{ cat.icon }} {{ cat.name }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -181,7 +197,7 @@
                 {% if articles %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {% for article in articles %}
-                    <article class="article-card card-modern glass rounded-2xl shadow-xl overflow-hidden transition-all duration-500 stagger-item group border border-white/20 dark:border-gray-700/50">
+                    <article class="article-card card-modern card-spotlight glass-pro rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 stagger-fade group border border-white/20 dark:border-gray-700/50 tilt-3d noise-texture hover:shadow-colored">
                         {% if article.image_url %}
                         <a href="/article/{{ article.id }}" class="block overflow-hidden image-zoom relative">
                             <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-56 object-cover transition-transform duration-700" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'w-full h-56 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center\'><span class=\'text-6xl float-animation\'>🌍</span></div>'"><div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -410,6 +426,69 @@
             currentCalendarDate = new Date(selectedDate + 'T00:00:00');
         }
         renderCalendar();
+    </script>
+    
+    <!-- Advanced Modern Interactions -->
+    <script src="/static/js/modern-ui.js"></script>
+    <script src="/static/js/advanced-interactions.js"></script>
+    <script>
+        // Initialize all advanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize spotlight effect on cards
+            initSpotlightEffect();
+            
+            // Initialize magnetic buttons
+            initMagneticButtons();
+            
+            // Initialize 3D tilt on cards
+            init3DTilt();
+            
+            // Initialize parallax scrolling
+            initParallaxScroll();
+            
+            // Initialize loading manager
+            const loadingManager = new LoadingManager();
+            
+            // Initialize keyboard shortcuts
+            const shortcuts = new KeyboardShortcuts();
+            
+            // Add smooth page transitions
+            document.querySelectorAll('a').forEach(link => {
+                if (!link.hasAttribute('target') && link.hostname === window.location.hostname) {
+                    link.addEventListener('click', function(e) {
+                        const href = this.getAttribute('href');
+                        if (href && !href.startsWith('#')) {
+                            e.preventDefault();
+                            document.body.style.opacity = '0';
+                            document.body.style.transition = 'opacity 0.3s ease';
+                            setTimeout(() => {
+                                window.location.href = href;
+                            }, 300);
+                        }
+                    });
+                }
+            });
+            
+            // Add scroll progress indicator
+            const progressBar = document.createElement('div');
+            progressBar.className = 'fixed top-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 z-50 transition-all duration-300';
+            progressBar.style.width = '0%';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', () => {
+                const winScroll = document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+            
+            // Fade in page on load
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        });
     </script>
 </body>
 </html>

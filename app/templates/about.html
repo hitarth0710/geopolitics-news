@@ -152,5 +152,37 @@
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); }
     </script>
+    
+    <!-- Advanced Modern Interactions -->
+    <script src="/static/js/modern-ui.js"></script>
+    <script src="/static/js/advanced-interactions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize advanced features
+            initSpotlightEffect();
+            initMagneticButtons();
+            init3DTilt();
+            
+            // Add scroll progress
+            const progressBar = document.createElement('div');
+            progressBar.className = 'fixed top-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 z-50 transition-all duration-300';
+            progressBar.style.width = '0%';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', () => {
+                const winScroll = document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+            
+            // Fade in animation
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        });
+    </script>
 </body>
 </html>
