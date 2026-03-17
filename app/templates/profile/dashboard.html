@@ -19,6 +19,7 @@
         }
     </script>
     <link rel="stylesheet" href="/static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -26,9 +27,9 @@
         .gradient-text { background: linear-gradient(135deg, #1e40af, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
     <!-- Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
@@ -71,9 +72,14 @@
         <div class="bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20 text-red-800 dark:text-red-400 px-4 py-3 rounded-lg mb-6">✗ {{ error }}</div>
         {% endif %}
 
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-                <img src="{{ user.get_gravatar_url(120) }}" alt="{{ user.display_name }}" class="w-24 h-24 rounded-full ring-4 ring-primary/30">
+        <div class="glass rounded-3xl p-10 mb-10 border border-white/20 dark:border-gray-700/50 shadow-2xl page-transition">
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                <div class="relative">
+                    <img src="{{ user.get_gravatar_url(120) }}" alt="{{ user.display_name }}" class="w-32 h-32 rounded-2xl ring-4 ring-purple-500/30 shadow-2xl">
+                    <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-xl">✔️</span>
+                    </div>
+                </div>
                 <div class="text-center md:text-left flex-1">
                     <h1 class="text-2xl font-bold">{{ user.display_name }}</h1>
                     <p class="text-gray-500 dark:text-gray-400">@{{ user.username }}</p>
@@ -169,6 +175,38 @@
     <script>
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); }
+    </script>
+    
+    <!-- Advanced Modern Interactions -->
+    <script src="/static/js/modern-ui.js"></script>
+    <script src="/static/js/advanced-interactions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize advanced features
+            initSpotlightEffect();
+            initMagneticButtons();
+            init3DTilt();
+            
+            // Add scroll progress
+            const progressBar = document.createElement('div');
+            progressBar.className = 'fixed top-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 z-50 transition-all duration-300';
+            progressBar.style.width = '0%';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', () => {
+                const winScroll = document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+            
+            // Fade in
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        });
     </script>
 </body>
 </html>

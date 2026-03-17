@@ -21,15 +21,28 @@
         }
     </script>
     <link rel="stylesheet" href="/static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="/static/css/advanced.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .headline { font-family: 'Playfair Display', serif; }
-        .article-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .gradient-text { background: linear-gradient(135deg, #1e40af, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Enhanced Gradient Text */
+        .gradient-text { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+            animation: gradient-flow 8s ease infinite;
+        }
+        
+        @keyframes gradient-flow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
         
         /* Mobile menu styles */
         .mobile-nav { display: none; position: fixed; top: 64px; left: 0; right: 0; background: inherit; z-index: 40; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -44,15 +57,27 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" data-parallax="0.1"></div>
+        <div class="absolute top-1/3 -right-4 w-72 h-72 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" style="animation-delay: 2s;" data-parallax="0.15"></div>
+        <div class="absolute bottom-0 left-1/3 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 morph-shape particle" style="animation-delay: 4s;" data-parallax="0.2"></div>
+        <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-cyan-300 dark:bg-cyan-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-15 morph-shape particle" style="animation-delay: 6s;" data-parallax="0.25"></div>
+    </div>
+    
+    <!-- Dot Matrix Pattern -->
+    <div class="fixed inset-0 dot-matrix opacity-30 dark:opacity-10 pointer-events-none"></div>
     <!-- Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+    <nav class="glass-pro sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-2xl noise-texture">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <span class="text-2xl">🌍</span>
-                        <span class="headline text-xl font-bold gradient-text">{{ app_name }}</span>
+                    <a href="/" class="flex items-center space-x-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all duration-300 tilt-3d shadow-colored">
+                            <span class="text-xl">🌍</span>
+                        </div>
+                        <span class="headline text-2xl font-bold gradient-text neon-glow">{{ app_name }}</span>
                     </a>
                 </div>
                 
@@ -139,21 +164,21 @@
     </nav>
 
     <!-- Category Pills -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div class="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
-                <a href="/" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all {% if not current_category %}bg-primary text-white shadow-lg{% else %}bg-gray-100 dark:bg-gray-700 hover:bg-gray-200{% endif %}">🌐 All News</a>
+    <div class="glass-pro border-b border-gray-200/50 dark:border-gray-700/50 noise-texture">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex space-x-3 overflow-x-auto scrollbar-hide pb-1">
+                <a href="/" class="chip-modern btn-magnetic px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if not current_category %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl shadow-colored{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %} bloom">🌐 All News</a>
                 {% for cat in categories %}
-                <a href="/?category={{ cat.slug }}" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all {% if current_category == cat.slug %}bg-primary text-white shadow-lg{% else %}bg-gray-100 dark:bg-gray-700 hover:bg-gray-200{% endif %}">{{ cat.icon }} {{ cat.name }}</a>
+                <a href="/?category={{ cat.slug }}" class="chip-modern btn-magnetic px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap {% if current_category == cat.slug %}bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl shadow-colored{% else %}bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700{% endif %} bloom">{{ cat.icon }} {{ cat.name }}</a>
                 {% endfor %}
             </div>
         </div>
     </div>
 
     <!-- Stats Bar -->
-    <div class="bg-gray-100 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+    <div class="relative bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
                 <div>
                     {% if search_query %}<span class="font-medium">{{ total_articles }}</span> results for "{{ search_query }}" <a href="/" class="text-primary hover:underline ml-2">Clear</a>
                     {% elif current_date %}<span class="font-medium">{{ total_articles }}</span> articles from <span class="font-medium">{{ current_date }}</span> <a href="/" class="text-primary hover:underline ml-2">Clear</a>
@@ -166,30 +191,30 @@
     </div>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="flex flex-col lg:flex-row gap-8">
             <div class="flex-1">
                 {% if articles %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {% for article in articles %}
-                    <article class="article-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 fade-in">
+                    <article class="article-card card-modern card-spotlight glass-pro rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 stagger-fade group border border-white/20 dark:border-gray-700/50 tilt-3d noise-texture hover:shadow-colored">
                         {% if article.image_url %}
-                        <a href="/article/{{ article.id }}" class="block overflow-hidden">
-                            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'w-full h-48 bg-gradient-to-br from-primary to-accent flex items-center justify-center\'><span class=\'text-6xl\'>🌍</span></div>'">
+                        <a href="/article/{{ article.id }}" class="block overflow-hidden image-zoom relative">
+                            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-full h-56 object-cover transition-transform duration-700" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'w-full h-56 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center\'><span class=\'text-6xl float-animation\'>🌍</span></div>'"><div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </a>
                         {% else %}
-                        <a href="/article/{{ article.id }}"><div class="w-full h-48 bg-gradient-to-br from-primary to-accent flex items-center justify-center"><span class="text-6xl">🌍</span></div></a>
+                        <a href="/article/{{ article.id }}"><div class="w-full h-56 gradient-bg-animated flex items-center justify-center relative overflow-hidden"><span class="text-6xl float-animation relative z-10">🌍</span></div></a>
                         {% endif %}
-                        <div class="p-5">
-                            <div class="flex items-center justify-between mb-3">
-                                {% if article.source %}<span class="text-xs font-semibold text-primary uppercase">{{ article.source.name }}</span>{% endif %}
-                                {% if article.published_at %}<time class="text-xs text-gray-500">{{ article.published_at.strftime('%b %d, %Y') }}</time>{% endif %}
+                        <div class="p-6 relative">
+                            <div class="flex items-center justify-between mb-4">
+                                {% if article.source %}<span class="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 uppercase tracking-wide">{{ article.source.name }}</span>{% endif %}
+                                {% if article.published_at %}<time class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ article.published_at.strftime('%b %d, %Y') }}</time>{% endif %}
                             </div>
-                            <h3 class="headline text-lg font-bold mb-2 line-clamp-2 hover:text-primary"><a href="/article/{{ article.id }}">{{ article.title }}</a></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">{{ article.summary[:200] }}{% if article.summary|length > 200 %}...{% endif %}</p>
-                            <div class="flex flex-wrap gap-2">
-                                {% if article.category %}<a href="/?category={{ article.category.slug }}" class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200">{{ article.category.icon }} {{ article.category.name }}</a>{% endif %}
-                                {% if article.region %}<a href="/?region={{ article.region.slug }}" class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-200">{{ article.region.icon }} {{ article.region.name }}</a>{% endif %}
+                            <h3 class="headline text-xl font-bold mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300"><a href="/article/{{ article.id }}">{{ article.title }}</a></h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-5 leading-relaxed">{{ article.summary[:200] }}{% if article.summary|length > 200 %}...{% endif %}</p>
+                            <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+                                {% if article.category %}<a href="/?category={{ article.category.slug }}" class="badge-modern bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 hover:shadow-lg">{{ article.category.icon }} {{ article.category.name }}</a>{% endif %}
+                                {% if article.region %}<a href="/?region={{ article.region.slug }}" class="badge-modern bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 hover:shadow-lg">{{ article.region.icon }} {{ article.region.name }}</a>{% endif %}
                             </div>
                         </div>
                     </article>
@@ -223,8 +248,8 @@
             <!-- Sidebar -->
             <aside class="lg:w-80 space-y-6">
                 <!-- Calendar Widget -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-                    <h3 class="font-bold text-lg mb-4">📅 Browse by Date</h3>
+                <div class="glass rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-700/50 stagger-item">
+                    <h3 class="font-bold text-xl mb-4 gradient-text-modern">📅 Browse by Date</h3>
                     <div id="calendar" class="calendar-widget">
                         <div class="flex items-center justify-between mb-4">
                             <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -252,8 +277,8 @@
                     {% endif %}
                 </div>
                 
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-                    <h3 class="font-bold text-lg mb-4">🗺️ Regions</h3>
+                <div class="glass rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-700/50 stagger-item" style="animation-delay: 0.1s">
+                    <h3 class="font-bold text-xl mb-4 gradient-text-modern">🗺️ Regions</h3>
                     <div class="space-y-1">
                         {% for reg in regions %}
                         <a href="/?region={{ reg.slug }}" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 {% if current_region == reg.slug %}bg-blue-50 dark:bg-blue-900/20 border-l-4 border-primary{% endif %}">
@@ -264,8 +289,8 @@
                     </div>
                 </div>
                 
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-                    <h3 class="font-bold text-lg mb-4">📡 Sources</h3>
+                <div class="glass rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-700/50 stagger-item" style="animation-delay: 0.2s">
+                    <h3 class="font-bold text-xl mb-4 gradient-text-modern">📡 Sources</h3>
                     <div class="space-y-3">
                         {% for src in sources[:10] %}
                         <div class="flex items-center space-x-3"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><span class="text-sm">{{ src.name }}</span></div>
@@ -274,9 +299,9 @@
                     <a href="/about" class="block mt-4 text-sm text-primary hover:underline">View all sources →</a>
                 </div>
                 
-                <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-md p-5 text-white">
-                    <h3 class="font-bold text-lg mb-3">🔥 Hot Topics</h3>
-                    <ul class="space-y-2 text-sm">
+                <div class="gradient-bg-animated rounded-2xl shadow-xl p-6 text-white stagger-item border border-white/20" style="animation-delay: 0.3s">
+                    <h3 class="font-bold text-xl mb-4 text-white neon-glow">🔥 Hot Topics</h3>
+                    <ul class="space-y-3 text-sm">
            Mobile menu toggle
         function toggleMobileMenu() {
             const mobileNav = document.getElementById('mobileNav');
@@ -302,18 +327,31 @@
         </div>
     </main>
 
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <footer class="relative glass border-t border-gray-200/50 dark:border-gray-700/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-2 mb-4 md:mb-0"><span class="text-2xl">🌍</span><span class="headline font-bold gradient-text">{{ app_name }}</span></div>
-                <div class="flex items-center space-x-6 text-sm text-gray-500">
-                    <a href="/about" class="hover:text-primary">About</a>
-                    <a href="/health" class="hover:text-primary">Status</a>
-                    <span>© 2024</span>
+                <div class="flex items-center space-x-3 mb-6 md:mb-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-xl">🌍</span>
+                    </div>
+                    <span class="headline text-2xl font-bold gradient-text">{{ app_name }}</span>
                 </div>
+                <div class="flex items-center space-x-8 text-sm">
+                    <a href="/about" class="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 transition-all font-medium">About</a>
+                    <a href="/health" class="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 transition-all font-medium">Status</a>
+                    <span class="text-gray-500 dark:text-gray-400">© 2024</span>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-200/50 dark:border-gray-700/50 text-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Stay informed about global events • Built with modern web technologies</p>
             </div>
         </div>
     </footer>
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl opacity-0 invisible transition-all duration-300 hover:scale-110 glow z-50" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+    </button>
 
     <script>
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
@@ -388,6 +426,69 @@
             currentCalendarDate = new Date(selectedDate + 'T00:00:00');
         }
         renderCalendar();
+    </script>
+    
+    <!-- Advanced Modern Interactions -->
+    <script src="/static/js/modern-ui.js"></script>
+    <script src="/static/js/advanced-interactions.js"></script>
+    <script>
+        // Initialize all advanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize spotlight effect on cards
+            initSpotlightEffect();
+            
+            // Initialize magnetic buttons
+            initMagneticButtons();
+            
+            // Initialize 3D tilt on cards
+            init3DTilt();
+            
+            // Initialize parallax scrolling
+            initParallaxScroll();
+            
+            // Initialize loading manager
+            const loadingManager = new LoadingManager();
+            
+            // Initialize keyboard shortcuts
+            const shortcuts = new KeyboardShortcuts();
+            
+            // Add smooth page transitions
+            document.querySelectorAll('a').forEach(link => {
+                if (!link.hasAttribute('target') && link.hostname === window.location.hostname) {
+                    link.addEventListener('click', function(e) {
+                        const href = this.getAttribute('href');
+                        if (href && !href.startsWith('#')) {
+                            e.preventDefault();
+                            document.body.style.opacity = '0';
+                            document.body.style.transition = 'opacity 0.3s ease';
+                            setTimeout(() => {
+                                window.location.href = href;
+                            }, 300);
+                        }
+                    });
+                }
+            });
+            
+            // Add scroll progress indicator
+            const progressBar = document.createElement('div');
+            progressBar.className = 'fixed top-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 z-50 transition-all duration-300';
+            progressBar.style.width = '0%';
+            document.body.appendChild(progressBar);
+            
+            window.addEventListener('scroll', () => {
+                const winScroll = document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+            
+            // Fade in page on load
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        });
     </script>
 </body>
 </html>
