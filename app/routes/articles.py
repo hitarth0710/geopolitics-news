@@ -1,7 +1,7 @@
 """Article API routes."""
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, func
 from typing import Optional, List
 
 from ..database import get_db
@@ -21,7 +21,11 @@ async def get_articles(
     offset: int = Query(0, ge=0),
 ):
     """Get articles with optional filtering."""
-    query = db.query(Article).order_by(desc(Article.published_at))
+    query = db.query(Article).options(
+        joinedload(Article.source),
+        joinedload(Article.category),
+        joinedload(Article.region),
+    ).order_by(desc(Article.published_at))
     
     # Apply filters
     if category:
@@ -85,7 +89,11 @@ async def get_articles(
 @router.get("/{article_id}")
 async def get_article(article_id: int, db: Session = Depends(get_db)):
     """Get a single article by ID."""
-    article = db.query(Article).filter(Article.id == article_id).first()
+    article = db.query(Article).options(
+        joinedload(Article.source),
+        joinedload(Article.category),
+        joinedload(Article.region),
+    ).filter(Article.id == article_id).first()
     
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -121,23 +129,34 @@ async def get_article(article_id: int, db: Session = Depends(get_db)):
 @router.get("/sources/list")
 async def get_sources(db: Session = Depends(get_db)):
     """Get all available sources."""
-    sources = db.query(Source).filter(Source.is_active == True).all()
+    results = (
+        db.query(Source, func.count(Article.id).label("article_count"))
+        .outerjoin(Article, Article.source_id == Source.id)
+        .filter(Source.is_active == True)
+        .group_by(Source.id)
+        .all()
+    )
     return [
         {
             "id": s.id,
             "name": s.name,
             "url": s.url,
             "logo_url": s.logo_url,
-            "article_count": len(s.articles)
+            "article_count": count
         }
-        for s in sources
+        for s, count in results
     ]
 
 
 @router.get("/categories/list")
 async def get_categories(db: Session = Depends(get_db)):
     """Get all categories."""
-    categories = db.query(Category).all()
+    results = (
+        db.query(Category, func.count(Article.id).label("article_count"))
+        .outerjoin(Article, Article.category_id == Category.id)
+        .group_by(Category.id)
+        .all()
+    )
     return [
         {
             "id": c.id,
@@ -145,23 +164,28 @@ async def get_categories(db: Session = Depends(get_db)):
             "slug": c.slug,
             "icon": c.icon,
             "description": c.description,
-            "article_count": len(c.articles)
+            "article_count": count
         }
-        for c in categories
+        for c, count in results
     ]
 
 
 @router.get("/regions/list")
 async def get_regions(db: Session = Depends(get_db)):
     """Get all regions."""
-    regions = db.query(Region).all()
+    results = (
+        db.query(Region, func.count(Article.id).label("article_count"))
+        .outerjoin(Article, Article.region_id == Region.id)
+        .group_by(Region.id)
+        .all()
+    )
     return [
         {
             "id": r.id,
             "name": r.name,
             "slug": r.slug,
             "icon": r.icon,
-            "article_count": len(r.articles)
+            "article_count": count
         }
-        for r in regions
+        for r, count in results
     ]

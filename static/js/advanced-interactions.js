@@ -47,27 +47,37 @@ function init3DTilt() {
     const cards = document.querySelectorAll('.article-card, .glass');
     
     cards.forEach(card => {
+        let rafId = null;
+
         card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const rotateX = ((y - centerY) / centerY) * 5;
-            const rotateY = ((centerX - x) / centerX) * 5;
-            
-            card.style.transform = `
-                perspective(1000px) 
-                rotateX(${-rotateX}deg) 
-                rotateY(${rotateY}deg) 
-                translateZ(10px)
-                scale3d(1.02, 1.02, 1.02)
-            `;
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * 5;
+                const rotateY = ((centerX - x) / centerX) * 5;
+                
+                card.style.transform = `
+                    perspective(1000px) 
+                    rotateX(${-rotateX}deg) 
+                    rotateY(${rotateY}deg) 
+                    translateZ(10px)
+                    scale3d(1.02, 1.02, 1.02)
+                `;
+                rafId = null;
+            });
         });
         
         card.addEventListener('mouseleave', () => {
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
             card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0) scale3d(1, 1, 1)';
         });
     });
@@ -76,16 +86,23 @@ function init3DTilt() {
 // Parallax Scrolling for Background Elements
 function initParallaxScroll() {
     const parallaxElements = document.querySelectorAll('[data-parallax]');
+    if (!parallaxElements.length) return;
     
+    let ticking = false;
     window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        
-        parallaxElements.forEach(element => {
-            const speed = parseFloat(element.dataset.parallax) || 0.5;
-            const yPos = -(scrolled * speed);
-            element.style.transform = `translate3d(0, ${yPos}px, 0)`;
-        });
-    });
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrolled = window.pageYOffset;
+                parallaxElements.forEach(element => {
+                    const speed = parseFloat(element.dataset.parallax) || 0.5;
+                    const yPos = -(scrolled * speed);
+                    element.style.transform = `translate3d(0, ${yPos}px, 0)`;
+                });
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
 }
 
 // Smooth Scroll with Easing
@@ -314,11 +331,13 @@ function initImageLazyLoad() {
                 img.style.filter = 'blur(20px)';
                 img.style.transition = 'filter 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
                 
-                const tempImg = new Image();
-                tempImg.src = img.src;
-                tempImg.onload = () => {
+                if (img.complete) {
                     img.style.filter = 'blur(0)';
-                };
+                } else {
+                    img.addEventListener('load', () => {
+                        img.style.filter = 'blur(0)';
+                    }, { once: true });
+                }
                 
                 imageObserver.unobserve(img);
             }
