@@ -32,16 +32,25 @@ async def profile_page(
     if not user:
         return RedirectResponse(url="/login?next=/profile", status_code=302)
     
-    # Get saved articles count
-    saved_count = len(user.saved_articles)
+    # Get saved articles count using a SQL COUNT instead of loading the full relationship
+    saved_count = db.query(func.count()).select_from(saved_articles).filter(
+        saved_articles.c.user_id == user.id
+    ).scalar()
     
     # Get reading history count
     history_count = db.query(ReadingHistory).filter(
         ReadingHistory.user_id == user.id
     ).count()
     
-    # Get recent saved articles (last 5)
-    recent_saved = user.saved_articles[:5]
+    # Get recent saved articles (last 5) using a SQL query instead of loading the full relationship
+    recent_saved = (
+        db.query(Article)
+        .join(saved_articles, Article.id == saved_articles.c.article_id)
+        .filter(saved_articles.c.user_id == user.id)
+        .order_by(saved_articles.c.saved_at.desc())
+        .limit(5)
+        .all()
+    )
     
     # Get account age in days
     account_age = (datetime.utcnow() - user.created_at).days

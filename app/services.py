@@ -56,33 +56,30 @@ def init_regions(db: Session):
 
 def store_articles(db: Session, articles: List[Dict]) -> int:
     """Store articles in database, skipping duplicates. Returns count of new articles."""
-    new_count = 0
-    
+    if not articles:
+        return 0
+
+    # Pre-fetch all existing article URLs to avoid per-article duplicate checks
+    existing_urls = {url for (url,) in db.query(Article.url).all()}
+
+    # Pre-fetch lookup maps so each article doesn't issue individual queries
+    sources_by_name = {s.name: s for s in db.query(Source).all()}
+    categories_by_slug = {c.slug: c for c in db.query(Category).all()}
+    regions_by_slug = {r.slug: r for r in db.query(Region).all()}
+
+    new_articles = []
     for article_data in articles:
-        # Check if article already exists (by URL)
-        existing = db.query(Article).filter(Article.url == article_data['url']).first()
-        if existing:
+        url = article_data.get('url')
+        if not url or url in existing_urls:
             continue
-        
-        # Get source
-        source = None
-        if article_data.get('source_name'):
-            source = db.query(Source).filter(Source.name == article_data['source_name']).first()
-        
-        # Get category
-        category = None
-        if article_data.get('category_slug'):
-            category = db.query(Category).filter(Category.slug == article_data['category_slug']).first()
-        
-        # Get region
-        region = None
-        if article_data.get('region_slug'):
-            region = db.query(Region).filter(Region.slug == article_data['region_slug']).first()
-        
-        # Create article
+
+        source = sources_by_name.get(article_data.get('source_name'))
+        category = categories_by_slug.get(article_data.get('category_slug'))
+        region = regions_by_slug.get(article_data.get('region_slug'))
+
         article = Article(
             title=article_data['title'],
-            url=article_data['url'],
+            url=url,
             summary=article_data.get('summary'),
             author=article_data.get('author'),
             published_at=article_data.get('published_at'),
@@ -91,13 +88,27 @@ def store_articles(db: Session, articles: List[Dict]) -> int:
             category_id=category.id if category else None,
             region_id=region.id if region else None,
         )
-        
-        try:
-            db.add(article)
-            db.commit()
-            new_count += 1
-        except IntegrityError:
-            db.rollback()
-            continue
-    
-    return new_count
+        new_articles.append(article)
+        # Track URL to avoid duplicates within the same batch
+        existing_urls.add(url)
+
+    if not new_articles:
+        return 0
+
+    try:
+        db.bulk_save_objects(new_articles)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # Fallback: insert one by one to maximise how many are saved
+        saved = 0
+        for article in new_articles:
+            try:
+                db.add(article)
+                db.commit()
+                saved += 1
+            except IntegrityError:
+                db.rollback()
+        return saved
+
+    return len(new_articles)

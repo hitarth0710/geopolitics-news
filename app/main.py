@@ -9,12 +9,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, exists
 
 from .settings import settings
 from .logging_config import logger, setup_logging
 from .database import init_db, SessionLocal, get_db
-from .models import Article, Category, Region, Source, ReadingHistory
+from .models import Article, Category, Region, Source, ReadingHistory, saved_articles
 from .routes.articles import router as articles_router
 from .routes.auth_routes import router as auth_router
 from .routes.profile_routes import router as profile_router
@@ -336,7 +336,12 @@ async def article_detail(
     user = get_current_user(db, request)
     is_saved = False
     if user:
-        is_saved = article in user.saved_articles
+        is_saved = db.query(
+            exists().where(
+                saved_articles.c.user_id == user.id,
+                saved_articles.c.article_id == article_id,
+            )
+        ).scalar()
         # Add to reading history
         history = ReadingHistory(user_id=user.id, article_id=article_id)
         db.add(history)
